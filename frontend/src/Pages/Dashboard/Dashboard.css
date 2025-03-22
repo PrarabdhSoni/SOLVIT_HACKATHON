@@ -15,7 +15,7 @@ body {
   /* Sidebar */
   .cd-sidebar {
     width: 250px;
-    background-color: #333;
+    background-color: #3a69bb;
     color: white;
     padding: 20px;
     display: flex;
@@ -51,7 +51,7 @@ body {
   }
   
   .cd-nav ul li button:hover {
-    background-color: #575757;
+    background-color: #EB5B00;
   }
   
   .cd-sidebar-sections {
@@ -74,7 +74,7 @@ body {
   }
   
   .cd-section button:hover {
-    background-color: #575757;
+    background-color: #EB5B00;
   }
   
   /* Main Content */
