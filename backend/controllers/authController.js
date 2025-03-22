@@ -121,23 +121,9 @@ export const verifyOtp = async (req, res) => {
     }
 
     await sql`UPDATE School_Login SET isActive = TRUE WHERE id = ${decodedUserId}`;
-    
+
     // OTP verified, remove it from the database
     await sql`DELETE FROM Confirmation_Token WHERE id = ${decodedUserId};`;
 
     res.status(200).json({ message: "OTP verified successfully" });
-
-  // const query = "SELECT * FROM otp_table WHERE user_id = ? AND otp_code = ? AND expires_at > NOW()";
-  // db.query(query, [userId, otp], (err, results) => {
-  //   if (err) {
-  //     console.error("Error querying database:", err);
-  //     return res.status(500).json({ success: false, message: "Internal server error" });
-  //   }
-
-  //   if (results.length === 0) {
-  //     return res.status(401).json({ success: false, message: "Invalid or expired OTP" });
-  //   }
-
-  //   return res.json({ success: true, message: "OTP verified successfully" });
-  // });
 };
