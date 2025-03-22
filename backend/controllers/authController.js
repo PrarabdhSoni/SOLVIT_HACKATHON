@@ -97,3 +97,47 @@ export const google = async (req,res) =>{
         res.status(401).json({ message: "Invalid Google token" });
     }
 }
+
+
+export const verifyOtp = async (req, res) => {
+  const { userId, otp } = req.body;
+
+  console.log(userId, otp);
+
+  if (!userId || !otp) {
+    return res.status(400).json({ success: false, message: "Invalid request" });
+  }
+
+  const decoded = jwt.verify(userId, "hifi"); // Use your secret key
+  const decodedUserId = decoded.userId;  // Extract userId
+
+  const otpRecord = await sql`
+      SELECT otp FROM Confirmation_Token 
+      WHERE id = ${decodedUserId} AND otp = ${otp};
+    `;
+
+    if (otpRecord.length === 0) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    await sql`UPDATE School_Login SET isActive = TRUE WHERE id = ${decodedUserId}`;
+    
+    // OTP verified, remove it from the database
+    await sql`DELETE FROM Confirmation_Token WHERE id = ${decodedUserId};`;
+
+    res.status(200).json({ message: "OTP verified successfully" });
+
+  // const query = "SELECT * FROM otp_table WHERE user_id = ? AND otp_code = ? AND expires_at > NOW()";
+  // db.query(query, [userId, otp], (err, results) => {
+  //   if (err) {
+  //     console.error("Error querying database:", err);
+  //     return res.status(500).json({ success: false, message: "Internal server error" });
+  //   }
+
+  //   if (results.length === 0) {
+  //     return res.status(401).json({ success: false, message: "Invalid or expired OTP" });
+  //   }
+
+  //   return res.json({ success: true, message: "OTP verified successfully" });
+  // });
+};

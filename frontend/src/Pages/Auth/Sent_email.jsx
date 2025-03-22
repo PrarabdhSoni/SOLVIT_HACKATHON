@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import "./OTPInput.css";
+import { useNavigate } from 'react-router-dom';
 
 const OTPInput = ({ length = 6, onSubmit }) => {
   const [user, setUser] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const user = localStorage.getItem('userId');
@@ -38,6 +40,34 @@ const OTPInput = ({ length = 6, onSubmit }) => {
     inputRefs.current[pasteData.length - 1]?.focus();
   };
 
+  const handleVerifyOTP = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/verify-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user,
+          otp: otp.join(""),
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (data.success) {
+        alert("OTP verified successfully!");
+        navigate("/dashboard")
+        // Redirect user or proceed further
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      alert("Something went wrong!");
+    }
+  };
+
   return (
     <div className="otp-wrapper">
       <div className="otp-image-container">
@@ -45,7 +75,7 @@ const OTPInput = ({ length = 6, onSubmit }) => {
       </div>
       <div className="otp-container">
         <p style={{fontSize: '24px', fontWeight: 'bolder', marginTop: '-10px'}}>OTP Verification</p>
-        <p style={{fontSize: '16px', marginTop: '-10px', marginBottom: '20px'}}>Enter otp code sent to {user}</p>
+        <p style={{fontSize: '16px', marginTop: '-10px', marginBottom: '20px'}}>Enter otp code sent to you</p>
         <div className="otp-input-container">
         {otp.map((digit, index) => (
           <input
@@ -61,9 +91,7 @@ const OTPInput = ({ length = 6, onSubmit }) => {
           />
         ))}
         </div>
-        <p style={{fontSize: '16px', marginTop: '20px'}}>Didn't recive OTP code ?</p>
-        <p style={{fontSize: '16px', marginTop: '-20px', color: '#007bff'}}>Resend OTP</p>
-        <button onClick={() => onSubmit(otp.join(""))} className="otp-button">
+        <button onClick={handleVerifyOTP} className="otp-button">
           Verify & Proceed
         </button>
       </div>
