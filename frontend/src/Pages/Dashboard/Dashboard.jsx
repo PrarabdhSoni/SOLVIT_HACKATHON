@@ -1,8 +1,9 @@
 import { useState } from "react";
 import "./Dashboard.css";
+import { FiLogOut } from "react-icons/fi";
 
 const Dashboard = () => {
-  const [activeSection, setActiveSection] = useState("home");
+  const [activeSection, setActiveSection] = useState("personalDetails");
 
   return (
     <div className="cd-dashboard">
@@ -10,11 +11,11 @@ const Dashboard = () => {
       <div className="cd-sidebar">
         {/* Welcome Banner */}
         <div className="cd-welcome-banner">
-          <h2>Welcome back, [User’s Name]!</h2>
+          <h2>Welcome back, User!</h2>
         </div>
 
         {/* Navigation Bar */}
-        <nav className="cd-nav">
+        {/* <nav className="cd-nav">
           <ul>
             <li>
               <button onClick={() => setActiveSection("home")}>Home</button>
@@ -23,7 +24,7 @@ const Dashboard = () => {
               <button onClick={() => setActiveSection("about")}>About</button>
             </li>
           </ul>
-        </nav>
+        </nav> */}
 
         {/* Sidebar Sections */}
         <div className="cd-sidebar-sections">
@@ -53,7 +54,10 @@ const Dashboard = () => {
         <nav className="cd-nav">
           <ul>
             <li>
-              <button onClick={() => alert("Logging out...")}>Logout</button>
+            <button className="cd-button">
+                <FiLogOut style={{ marginRight: "8px" }} />
+                Logout
+            </button>
             </li>
           </ul>
         </nav>

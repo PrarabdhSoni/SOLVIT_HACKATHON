@@ -1,17 +1,10 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
 import pandas as pd
 import pickle
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier, IsolationForest
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import LabelEncoder
-from sklearn.ensemble import IsolationForest
-
-app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
 
 # ------------------- Load Data -------------------
 df_severity = pd.read_csv("severity_score_dataset_v2.csv")
@@ -85,38 +78,29 @@ X_anomaly = anomaly_preprocessor.fit_transform(df_resolution[features_anomaly])
 anomaly_model = IsolationForest(contamination=0.1, random_state=42)
 anomaly_model.fit(X_anomaly)
 
-# ------------------- API Endpoints -------------------
-@app.route("/predict_severity", methods=["POST"])
-def predict_severity():
-    data = request.json
-    df_new = pd.DataFrame(data)
-    X_new_transformed = severity_ct.transform(df_new)
-    predicted_severity = severity_model.predict(X_new_transformed)
-    return jsonify({"severity_scores": predicted_severity.tolist()})
+# ------------------- Save Models using Pickle -------------------
+with open("severity_model.pkl", "wb") as f:
+    pickle.dump(severity_model, f)
 
-@app.route("/predict_resolution_time", methods=["POST"])
-def predict_resolution_time():
-    data = request.json
-    df_new = pd.DataFrame(data)
-    predicted_time = resolution_model.predict(df_new)
-    return jsonify({"resolution_time_days": predicted_time.tolist()})
+with open("resolution_model.pkl", "wb") as f:
+    pickle.dump(resolution_model, f)
 
-@app.route("/predict_complaint_category", methods=["POST"])
-def predict_complaint_category():
-    data = request.json["complaints"]
-    complaints_tfidf = tfidf.transform(data).toarray()
-    predictions = classification_model.predict(complaints_tfidf)
-    predicted_labels = le.inverse_transform(predictions)
-    return jsonify({"predicted_categories": predicted_labels.tolist()})
+with open("classification_model.pkl", "wb") as f:
+    pickle.dump(classification_model, f)
 
-@app.route("/detect_anomaly", methods=["POST"])
-def detect_anomaly():
-    data = request.json
-    df_new = pd.DataFrame(data)
-    X_new = anomaly_preprocessor.transform(df_new)
-    anomaly_prediction = anomaly_model.predict(X_new)
-    anomaly_labels = ["Anomaly" if x == -1 else "Normal" for x in anomaly_prediction]
-    return jsonify({"anomaly_status": anomaly_labels})
+with open("anomaly_model.pkl", "wb") as f:
+    pickle.dump(anomaly_model, f)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000, debug=True)
+with open("severity_ct.pkl", "wb") as f:
+    pickle.dump(severity_ct, f)
+
+with open("tfidf.pkl", "wb") as f:
+    pickle.dump(tfidf, f)
+
+with open("label_encoder.pkl", "wb") as f:
+    pickle.dump(le, f)
+
+with open("anomaly_preprocessor.pkl", "wb") as f:
+    pickle.dump(anomaly_preprocessor, f)
+
+print("Models trained and saved successfully!")
