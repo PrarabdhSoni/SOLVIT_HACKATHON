@@ -141,13 +141,6 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-
-      {/* Footer */}
-      <footer className="cd-footer">
-        <a href="#">Contact Us</a>
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
-      </footer>
     </div>
   );
 };
