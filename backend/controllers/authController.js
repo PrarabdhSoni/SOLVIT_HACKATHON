@@ -57,10 +57,8 @@ export const login = async (req, res) => {
   try {
     const result = await sql`SELECT * FROM School_Login WHERE Email = ${email}`;
     if (result.length === 0) return res.status(400).send("Email is not registered. Try Sign Up");
-
-    const storedHashedPassword = result[0].Password;
+    const storedHashedPassword = result[0].password;
     const isMatch = await bcrypt.compare(password, storedHashedPassword);
-
     if (!isMatch) return res.status(401).send("Invalid credentials");
 
     const userId = result[0].Id;

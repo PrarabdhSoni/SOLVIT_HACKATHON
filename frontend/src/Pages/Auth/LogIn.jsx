@@ -37,6 +37,17 @@ const LogIn = () =>{
         }
     }
 
+        // defining the google auth function on sucess
+        const HandleAuth = async (response) => {
+            try {
+                const res = await axios.post("http://localhost:5000/api/auth/google", { token: response.credential });
+                localStorage.setItem("token", res.data.token); // Store JWT token
+                navigate("/dashboard")
+            } catch (error) {
+                console.error("Auth failed", error);
+            }
+        }
+
     return(
         <div>
             <div className="signup-container">
@@ -83,7 +94,7 @@ const LogIn = () =>{
                         <GoogleOAuthProvider clientId={clientId}>
                             <GoogleLogin
                                 cookiePolicy={"single_host_origin"}
-                                onSuccess={console.log("Success")}
+                                onSuccess={HandleAuth}
                                 onError={() => {
                                 setError("Sign in with Google Failed, Please try again later");
                                 }}
