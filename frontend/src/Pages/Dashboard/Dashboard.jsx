@@ -155,7 +155,7 @@ const Dashboard = () => {
         </div>
 
         {/* Logout Option */}
-        <nav className="cd-nav">
+        <div className="cd-nav">
           <ul>
             <li>
             <button className="cd-button">
@@ -164,7 +164,7 @@ const Dashboard = () => {
             </button>
             </li>
           </ul>
-        </nav>
+        </div>
       </div>
 
       {/* Main Content */}
