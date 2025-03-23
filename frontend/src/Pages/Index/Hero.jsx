@@ -6,7 +6,7 @@ import Pragalbh from "../../assets/images/Pragalbh.png";
 import Muskan from "../../assets/images/Muskhan.jpg";
 import Shaurya from "../../assets/images/Shoryra.jpg";
 import Umanshi from "../../assets/images/Umanshi.jpg";
-import Vraj from "../../assets/images/sparsh.jpg";
+import Vraj from "../../assets/images/Vraj.jpg";
 
 const Hero = () => {
 
