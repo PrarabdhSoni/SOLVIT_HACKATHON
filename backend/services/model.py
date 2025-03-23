@@ -1,106 +1,127 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS  # Import CORS
 import pandas as pd
-import pickle
+import numpy as np
+from pymongo import MongoClient
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier, IsolationForest
-from sklearn.pipeline import Pipeline
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
+import joblib
+import json
+import os
 
-# ------------------- Load Data -------------------
-df_severity = pd.read_csv("severity_score_dataset_v2.csv")
-df_resolution = pd.read_csv("civic_issue_dataset.csv")
-df_classification = pd.read_csv("complaint_classification_dataset.csv")
+app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
-# ------------------- Train Severity Score Model -------------------
-severity_ct = ColumnTransformer([
-    ("ohe", OneHotEncoder(handle_unknown='ignore'), ["Complaint Category"]),
-    ("scaler", StandardScaler(), ["Public Sentiment Score"])
+# ----------------- MongoDB Connection -----------------
+MONGO_URI = "mongodb+srv://Prarabdh:db.prarabdh.soni@prarabdh.ezjid.mongodb.net/?retryWrites=true&w=majority&appName=Prarabdh"
+client = MongoClient(MONGO_URI)
+db = client["UrbanEye"]
+collection = db["CivicIssue"]
+
+# ----------------- Fetch Data from MongoDB -----------------
+def load_data():
+    data = list(collection.find({}, {"_id": 0}))  # Fetch all documents, excluding MongoDB ObjectId
+    return pd.DataFrame(data) if data else pd.DataFrame()
+
+df = load_data()
+
+if df.empty:
+    print("Warning: No data found in MongoDB collection.")
+
+# ----------------- Define Column Transformer for Severity Score Prediction -----------------
+severity_transformer = ColumnTransformer([
+    ("ohe", OneHotEncoder(handle_unknown='ignore'), ["Complaint_Category"]),
+    ("scaler", StandardScaler(), ["Public_Sentiment_Score"])
 ])
 
-X_severity = df_severity[["Complaint Category", "Public Sentiment Score"]]
-Y_severity = df_severity["Severity Score"]
+# ----------------- Train Severity Score Model -----------------
+if not df.empty:
+    X_severity = df[["Complaint_Category", "Public_Sentiment_Score"]]
+    Y_severity = df["Severity_Score"]
 
-X_severity_transformed = severity_ct.fit_transform(X_severity)
+    X_severity_transformed = severity_transformer.fit_transform(X_severity)
 
-severity_model = RandomForestRegressor(n_estimators=200, random_state=42)
-severity_model.fit(X_severity_transformed, Y_severity)
+    X_train, X_test, Y_train, Y_test = train_test_split(X_severity_transformed, Y_severity, test_size=0.2, random_state=42)
 
-# ------------------- Train Resolution Time Model -------------------
-features = ["Severity_Score", "Complaint_Category", "Historical_Frequency"]
-target = "Estimated_Resolution_Time_Days"
+    severity_model = RandomForestRegressor(n_estimators=300, random_state=42)
+    severity_model.fit(X_train, Y_train)
 
-df_resolution = df_resolution.dropna(subset=features + [target])
+# ----------------- Train Complaint Classification Model -----------------
+label_encoder_path = "label_encoder.pkl"
 
-X_resolution = df_resolution[features]
-y_resolution = df_resolution[target]
-
-categorical_features = ["Complaint_Category"]
-numerical_features = ["Severity_Score", "Historical_Frequency"]
-
-resolution_preprocessor = ColumnTransformer([
-    ("num", StandardScaler(), numerical_features),
-    ("cat", OneHotEncoder(handle_unknown='ignore'), categorical_features)
-])
-
-resolution_model = Pipeline([
-    ("preprocessor", resolution_preprocessor),
-    ("regressor", RandomForestRegressor(n_estimators=100, random_state=42))
-])
-
-resolution_model.fit(X_resolution, y_resolution)
-
-# ------------------- Train Complaint Classification Model -------------------
-le = LabelEncoder()
-df_classification["Complaint_Category"] = le.fit_transform(df_classification["Complaint_Category"])
+if os.path.exists(label_encoder_path):
+    le = joblib.load(label_encoder_path)
+else:
+    le = LabelEncoder()
+    df["Complaint_Category"] = le.fit_transform(df["Complaint_Category"])
+    joblib.dump(le, label_encoder_path)
 
 tfidf = TfidfVectorizer(max_features=500)
-X_text = tfidf.fit_transform(df_classification["Complaint_Text"]).toarray()
-y_classification = df_classification["Complaint_Category"]
 
-classification_model = RandomForestClassifier(n_estimators=200, random_state=42)
-classification_model.fit(X_text, y_classification)
+if not df.empty:
+    X_text = tfidf.fit_transform(df["Complaint_Text"]).toarray()
+    y = df["Complaint_Category"]
 
-# ------------------- Train Anomaly Detection Model -------------------
-features_anomaly = ["Historical_Frequency", "Severity_Score", "Region"]
+    X_train_text, X_test_text, y_train_text, y_test_text = train_test_split(X_text, y, test_size=0.2, random_state=42)
 
-df_resolution = df_resolution.dropna(subset=features_anomaly)
+    classification_model = RandomForestClassifier(n_estimators=200, random_state=42)
+    classification_model.fit(X_train_text, y_train_text)
 
-categorical_features_anomaly = ["Region"]
-numerical_features_anomaly = ["Historical_Frequency", "Severity_Score"]
+# ----------------- Store Complaints for Email -----------------
+complaint_list = []
 
-anomaly_preprocessor = ColumnTransformer([
-    ("num", StandardScaler(), numerical_features_anomaly),
-    ("cat", OneHotEncoder(handle_unknown='ignore'), categorical_features_anomaly)
-])
+@app.route("/submit-complaint", methods=["POST"])
+def submit_complaint():
+    data = request.json
 
-X_anomaly = anomaly_preprocessor.fit_transform(df_resolution[features_anomaly])
+    complaint_category = data.get("Complaint_Category")
+    public_sentiment_score = data.get("Public_Sentiment_Score")
+    complaint_text = data.get("Complaint_Text")
+    historical_frequency = data.get("Historical_Frequency")
+    region = data.get("Region")
+    user_email = data.get("User_Email")  # Capture user's email
+    timestamp = data.get("Timestamp", pd.Timestamp.now().isoformat())
 
-anomaly_model = IsolationForest(contamination=0.1, random_state=42)
-anomaly_model.fit(X_anomaly)
+    if not complaint_category or not public_sentiment_score or not complaint_text:
+        return jsonify({"error": "Missing required fields"}), 400
 
-# ------------------- Save Models using Pickle -------------------
-with open("severity_model.pkl", "wb") as f:
-    pickle.dump(severity_model, f)
+    # Predict Severity Score
+    severity_input = pd.DataFrame([[complaint_category, public_sentiment_score]], 
+                                  columns=["Complaint_Category", "Public_Sentiment_Score"])
+    severity_transformed = severity_transformer.transform(severity_input)
+    predicted_severity = severity_model.predict(severity_transformed)[0]
 
-with open("resolution_model.pkl", "wb") as f:
-    pickle.dump(resolution_model, f)
+    # Predict Complaint Category
+    text_vectorized = tfidf.transform([complaint_text]).toarray()
+    predicted_category_encoded = classification_model.predict(text_vectorized)
+    predicted_category = le.inverse_transform(predicted_category_encoded)[0]
 
-with open("classification_model.pkl", "wb") as f:
-    pickle.dump(classification_model, f)
+    # Store Complaint for Email
+    complaint_list.append({
+        "User_Email": user_email,
+        "Category": predicted_category,
+        "Complaint": complaint_text,
+        "Severity": predicted_severity,
+        "Location": region,
+        "Timestamp": timestamp
+    })
 
-with open("anomaly_model.pkl", "wb") as f:
-    pickle.dump(anomaly_model, f)
+    return jsonify({
+        "Predicted Severity Score": predicted_severity,
+        "Predicted Complaint Category": predicted_category
+    })
 
-with open("severity_ct.pkl", "wb") as f:
-    pickle.dump(severity_ct, f)
+@app.route("/get-complaints", methods=["GET"])
+def get_complaints():
+    return json.dumps(complaint_list), 200
 
-with open("tfidf.pkl", "wb") as f:
-    pickle.dump(tfidf, f)
+@app.route("/clear-complaints", methods=["GET"])
+def clear_complaints():
+    complaint_list.clear()
+    return "Complaints list cleared!", 200
 
-with open("label_encoder.pkl", "wb") as f:
-    pickle.dump(le, f)
-
-with open("anomaly_preprocessor.pkl", "wb") as f:
-    pickle.dump(anomaly_preprocessor, f)
-
-print("Models trained and saved successfully!")
+if __name__ == "__main__":
+    app.run(debug=True)
