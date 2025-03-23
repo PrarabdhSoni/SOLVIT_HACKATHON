@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import "./main.css";
 import UrbanEye from "src/assets/images/LOGO.png";
-import Prarabdh from "../../assets/images/Prarabdh Soni.jpeg";
-import Pragalbh from "../../assets/images/Pragalbh.png";
-import Muskan from "../../assets/images/Muskhan.jpg";
-import Shaurya from "../../assets/images/Shoryra.jpg";
-import Umanshi from "../../assets/images/Umanshi.jpg";
-import Vraj from "../../assets/images/Vraj.jpg";
+import Prarabdh from "src/assets/images/Prarabdh Soni.jpeg";
+import Pragalbh from "src/assets/images/Pragalbh.png";
+import Muskan from "src/assets/images/Muskhan.jpg";
+import Shaurya from "src/assets/images/Shoryra.jpg";
+import Umanshi from "src/assets/images/Umanshi.jpg";
+import Vraj from "src/assets/images/Vraj.jpg";
 
 const Hero = () => {
 
