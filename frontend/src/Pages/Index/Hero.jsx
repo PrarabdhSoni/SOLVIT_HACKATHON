@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import "./main.css";
-import UrbanEye from "../../assets/images/LOGO.png";
+import UrbanEye from "src/assets/images/LOGO.png";
 import Prarabdh from "../../assets/images/Prarabdh Soni.jpeg";
 import Pragalbh from "../../assets/images/Pragalbh.png";
 import Muskan from "../../assets/images/Muskhan.jpg";
