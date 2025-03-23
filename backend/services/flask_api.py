@@ -50,5 +50,7 @@ def get_priority_list():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Open port for deployment
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Use the PORT environment variable or default to 5000
+    app.run(host="0.0.0.0", port=port, debug=True)
