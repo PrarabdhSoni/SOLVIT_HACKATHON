@@ -12,7 +12,7 @@ export async function generateAndSendReport() {
         let issues = response.data;
 
         if (!issues || issues.length === 0) {
-            console.log("✅ No new civic issues reported in the last 24 hours.");
+            console.log("No new civic issues reported in the last 24 hours.");
             return;
         }
 
@@ -27,7 +27,7 @@ export async function generateAndSendReport() {
 
         // Send individual emails
         for (const [userEmail, userIssues] of Object.entries(complaintsByUser)) {
-            let reportContent = `<h2>📌 Your Daily Civic Issues Report</h2>
+            let reportContent = `<h2>Your Daily Civic Issues Report</h2>
                                 <p>These are the issues you reported in the last 24 hours:</p>
                                 <table border="1" cellpadding="5" cellspacing="0">
                                 <tr>
@@ -61,7 +61,7 @@ export async function generateAndSendReport() {
         await axios.get("http://127.0.0.1:5000/clear-complaints");
 
     } catch (error) {
-        console.error("❌ Error generating civic issues report:", error);
+        console.error("Error generating civic issues report:", error);
     }
 }
 
@@ -78,7 +78,7 @@ async function sendEmail(userEmail, reportContent) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: userEmail,  // Send to the specific user
-        subject: "📌 Your Daily Civic Issues Report",
+        subject: "Your Daily Civic Issues Report",
         html: reportContent,
     };
 

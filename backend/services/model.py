@@ -1,127 +1,76 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS  # Import CORS
 import pandas as pd
 import numpy as np
-from pymongo import MongoClient
-from sklearn.preprocessing import OneHotEncoder, StandardScaler, LabelEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
 import joblib
-import json
-import os
+from pymongo import MongoClient
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestRegressor, IsolationForest
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
-
-# ----------------- MongoDB Connection -----------------
-MONGO_URI = "mongodb+srv://Prarabdh:db.prarabdh.soni@prarabdh.ezjid.mongodb.net/?retryWrites=true&w=majority&appName=Prarabdh"
-client = MongoClient(MONGO_URI)
+# ------------------ Load Dataset from MongoDB ------------------
+client = MongoClient("mongodb+srv://Prarabdh:db.prarabdh.soni@prarabdh.ezjid.mongodb.net/?retryWrites=true&w=majority&appName=Prarabdh")
 db = client["UrbanEye"]
 collection = db["CivicIssue"]
+df = pd.DataFrame(list(collection.find()))
 
-# ----------------- Fetch Data from MongoDB -----------------
-def load_data():
-    data = list(collection.find({}, {"_id": 0}))  # Fetch all documents, excluding MongoDB ObjectId
-    return pd.DataFrame(data) if data else pd.DataFrame()
-
-df = load_data()
-
-if df.empty:
-    print("Warning: No data found in MongoDB collection.")
-
-# ----------------- Define Column Transformer for Severity Score Prediction -----------------
-severity_transformer = ColumnTransformer([
+# ------------------ Model 1: Severity Score Prediction ------------------
+severity_column_transformer = ColumnTransformer([
     ("ohe", OneHotEncoder(handle_unknown='ignore'), ["Complaint_Category"]),
     ("scaler", StandardScaler(), ["Public_Sentiment_Score"])
 ])
 
-# ----------------- Train Severity Score Model -----------------
-if not df.empty:
-    X_severity = df[["Complaint_Category", "Public_Sentiment_Score"]]
-    Y_severity = df["Severity_Score"]
+X_severity = df[["Complaint_Category", "Public_Sentiment_Score"]]
+Y_severity = df["Severity_Score"]
 
-    X_severity_transformed = severity_transformer.fit_transform(X_severity)
+X_severity_transformed = severity_column_transformer.fit_transform(X_severity)
+X_train_s, X_test_s, Y_train_s, Y_test_s = train_test_split(X_severity_transformed, Y_severity, test_size=0.2, random_state=42)
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X_severity_transformed, Y_severity, test_size=0.2, random_state=42)
+severity_model = RandomForestRegressor(n_estimators=200, random_state=42)
+severity_model.fit(X_train_s, Y_train_s)
 
-    severity_model = RandomForestRegressor(n_estimators=300, random_state=42)
-    severity_model.fit(X_train, Y_train)
+# ------------------ Model 2: Anomaly Detection ------------------
+anomaly_features = ["Historical_Frequency", "Severity_Score", "Region"]
+df = df.dropna(subset=anomaly_features)
 
-# ----------------- Train Complaint Classification Model -----------------
-label_encoder_path = "label_encoder.pkl"
+anomaly_column_transformer = ColumnTransformer([
+    ("num", StandardScaler(), ["Historical_Frequency", "Severity_Score"]),
+    ("cat", OneHotEncoder(handle_unknown='ignore'), ["Region"])
+])
 
-if os.path.exists(label_encoder_path):
-    le = joblib.load(label_encoder_path)
-else:
-    le = LabelEncoder()
-    df["Complaint_Category"] = le.fit_transform(df["Complaint_Category"])
-    joblib.dump(le, label_encoder_path)
+X_anomaly = anomaly_column_transformer.fit_transform(df[anomaly_features])
+anomaly_model = IsolationForest(contamination=0.1, random_state=42)
+anomaly_model.fit(X_anomaly)
 
-tfidf = TfidfVectorizer(max_features=500)
+# ------------------ Model 3: Complaint Resolution Time Prediction ------------------
+resolution_features = ["Severity_Score", "Complaint_Category", "Historical_Frequency"]
+target = "Estimated_Resolution_Time_Days"
 
-if not df.empty:
-    X_text = tfidf.fit_transform(df["Complaint_Text"]).toarray()
-    y = df["Complaint_Category"]
+df = df.dropna(subset=resolution_features + [target])
 
-    X_train_text, X_test_text, y_train_text, y_test_text = train_test_split(X_text, y, test_size=0.2, random_state=42)
+X_resolution = df[resolution_features]
+y_resolution = df[target]
 
-    classification_model = RandomForestClassifier(n_estimators=200, random_state=42)
-    classification_model.fit(X_train_text, y_train_text)
+X_train_r, X_test_r, y_train_r, y_test_r = train_test_split(X_resolution, y_resolution, test_size=0.2, random_state=42)
 
-# ----------------- Store Complaints for Email -----------------
-complaint_list = []
+resolution_column_transformer = ColumnTransformer([
+    ("num", StandardScaler(), ["Severity_Score", "Historical_Frequency"]),
+    ("cat", OneHotEncoder(handle_unknown='ignore'), ["Complaint_Category"])
+])
 
-@app.route("/submit-complaint", methods=["POST"])
-def submit_complaint():
-    data = request.json
+resolution_model = Pipeline([
+    ("preprocessor", resolution_column_transformer),
+    ("regressor", RandomForestRegressor(n_estimators=100, random_state=42))
+])
 
-    complaint_category = data.get("Complaint_Category")
-    public_sentiment_score = data.get("Public_Sentiment_Score")
-    complaint_text = data.get("Complaint_Text")
-    historical_frequency = data.get("Historical_Frequency")
-    region = data.get("Region")
-    user_email = data.get("User_Email")  # Capture user's email
-    timestamp = data.get("Timestamp", pd.Timestamp.now().isoformat())
+resolution_model.fit(X_train_r, y_train_r)
 
-    if not complaint_category or not public_sentiment_score or not complaint_text:
-        return jsonify({"error": "Missing required fields"}), 400
+# ------------------ Save Models ------------------
+joblib.dump(severity_model, "severity_model.pkl")
+joblib.dump(anomaly_model, "anomaly_model.pkl")
+joblib.dump(resolution_model, "resolution_model.pkl")
+joblib.dump(severity_column_transformer, "severity_transformer.pkl")
+joblib.dump(anomaly_column_transformer, "anomaly_transformer.pkl")
+joblib.dump(resolution_column_transformer, "resolution_transformer.pkl")
 
-    # Predict Severity Score
-    severity_input = pd.DataFrame([[complaint_category, public_sentiment_score]], 
-                                  columns=["Complaint_Category", "Public_Sentiment_Score"])
-    severity_transformed = severity_transformer.transform(severity_input)
-    predicted_severity = severity_model.predict(severity_transformed)[0]
-
-    # Predict Complaint Category
-    text_vectorized = tfidf.transform([complaint_text]).toarray()
-    predicted_category_encoded = classification_model.predict(text_vectorized)
-    predicted_category = le.inverse_transform(predicted_category_encoded)[0]
-
-    # Store Complaint for Email
-    complaint_list.append({
-        "User_Email": user_email,
-        "Category": predicted_category,
-        "Complaint": complaint_text,
-        "Severity": predicted_severity,
-        "Location": region,
-        "Timestamp": timestamp
-    })
-
-    return jsonify({
-        "Predicted Severity Score": predicted_severity,
-        "Predicted Complaint Category": predicted_category
-    })
-
-@app.route("/get-complaints", methods=["GET"])
-def get_complaints():
-    return json.dumps(complaint_list), 200
-
-@app.route("/clear-complaints", methods=["GET"])
-def clear_complaints():
-    complaint_list.clear()
-    return "Complaints list cleared!", 200
-
-if __name__ == "__main__":
-    app.run(debug=True)
+print("Models and transformers saved successfully!")
