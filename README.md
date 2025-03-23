@@ -70,3 +70,22 @@ cd backend
 npm install
 node server2.js
 ```
+### 🧠 Machine Learning Service (Flask)
+```bash
+cd backend/services
+python -m venv venv
+source venv/bin/activate   # On Windows use venv\Scripts\activate
+pip install -r requirements.txt
+python flask_api.py
+```
+## 🌟 Conclusion
+
+UrbanEye provides an AI-powered solution for prioritizing civic complaints. By leveraging Machine Learning and Sentiment Analysis, it ensures authorities address the most severe issues first, improving city management and citizen satisfaction.
+
+## 🤝 Contributors
+- **Prarabdh Soni** (23BSA10021) [Team Lead] - Backend Development
+- **Muskan Srivastav** (23BCE10014)- Backend Development
+- **Pragalbh Sharma** (23BCE11286)- Machine Learning Integration
+- **Shorya Pathak** (23BCE10194)- Machine Learning Integration
+- **Umanshi Goyal** (23BCE11633)- Frontend and UI
+- **Vraj Shah** (23BCE11796)- Frontend Development
