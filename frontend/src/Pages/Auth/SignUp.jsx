@@ -2,8 +2,9 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './School_SignUp.css'
+import './SignUp.css'
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import UrbanEye from '../../assets/Images/LOGO.png';
 
 // defining client ID of Google Auth2.0
 const clientId = "677130562489-hrvdg2tp2hlt7v0e7l2el986jdpng4cu.apps.googleusercontent.com"
@@ -17,11 +18,13 @@ const SignUp = () =>{
     // intialize the Hooks
     const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
+        name: "",
         email: "",
         password: "",
-        confirmPassword: "",
-    });
-
+        phone: "",
+        address: "",
+      });
+      const [loading, setLoading] = useState(false);
     // defining the function of handle change 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -35,6 +38,7 @@ const SignUp = () =>{
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
+        setLoading(true);
         try {
             const response = await axios.post('http://localhost:5000/api/auth/signup', formData);
             if (response.status == 200) {
@@ -42,6 +46,7 @@ const SignUp = () =>{
                 localStorage.setItem('userId', response.data.token);
                 navigate('/verifying');
             }
+            setLoading(false);
         } catch (error) {
         console.error('Error Sign Up in', error);
         setError('Error signing up. Please try again later.');
@@ -60,122 +65,79 @@ const SignUp = () =>{
     }
 
     return(
-        <div>
-
-            {/* creating whole page in two column*/}
-            <div className="signup-container">
-
-                {/* This is a form part */}
-                <div className='signup-form-container'>
-
-                    {/* Adding the logo image and heading*/}
-                    <img src='/src/assets/Images/LOGO.png'/>
-                    <h1 style={{fontFamily: "Roboto, sans-serif"}}>Register your account</h1>
-
-                    {/* Sign Up Form */}
-                    <form style={{marginTop: '50px'}}>
-
-                        {/* Email input field */}
-                        <div>
-                            <input
-                            type="text"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="Enter Email"
-                            required
-                            className="admission-form-input"
-                            style={{padding: '10px'}}
-                            />
-                        </div>
-
-                        {/* Password input field */}
-                        <div>
-                            <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            placeholder="Create Password"
-                            required
-                            className="admission-form-input"
-                            style={{padding: '10px'}}
-                            />
-                        </div>
-
-                        {/* Confirm Password field */}
-                        <div>
-                            <input
-                            type="password"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            placeholder="Confirm Password"
-                            required
-                            className="admission-form-input"
-                            style={{padding: '10px'}}
-                            />
-                        </div>
-
-                        {/* Terms and Condition field */}
-                        <div style={{marginTop: '5px'}}>
-                            <input
-                                type="checkbox"
-                                name="terms"
-                                checked={formData.terms}
-                                onChange={handleChange}
-                                required
-                            />
-                            <label htmlFor="terms" style={{fontFamily: "Roboto, sans-serif"}}>I agree to the terms and conditions</label>
-                        </div>
-
-                        {/* Form submit button */}
-                        <button
-                            type="submit"
-                            className="signup-form-button"
-                            onClick={handleSubmit}
-                            disabled={!formData.terms || !formData.email || !formData.password || !formData.confirmPassword}
-                            style={{marginBottom: 20}}
-                        >
-                            Sign Up
-                        </button>
-
-                        {/* OR tag for different signup option */}
-                        <p>OR</p>
-
-                        {/* Sign Up with Google */}
-                        <GoogleOAuthProvider clientId={clientId}>
-                            <GoogleLogin
-                                cookiePolicy={"single_host_origin"}
-                                onSuccess={HandleAuth}
-                                onError={() => {
-                                setError("Sign in with Google Failed, Please try again later");
-                                }}
-                                isSignedIn={true}
-                            />
-                        </GoogleOAuthProvider>
-
-                        {/* Error in Sign Up message */}
-                        {error && <p style={{ color: 'red' }}>{error}</p>}
-
-                        {/* Sign In route */}
-                        <p style={{opacity: 0.8}}>Already have an account ? <span>  Login</span> </p>
-                    </form>
-                </div>
-
-                {/* This is a secound column */}
-                <div className='signup-plain-container'>
-
-                    {/* Sign In route */}
-                    <div style={{textAlign: 'right', marginTop: '20px'}}>
-                    <span >Already have an account ? <button className="signup-form-button">Login</button></span>
-                    </div>
-                    
-                    {/* Adding Advertising Image */}
-                    <img src='/src/assets/Images/MANAGING-NOW.JPg' style={{height: '500px'}}/>
-                </div>
-            </div>
+        <section id="login">
+      <div className="login-container">
+        <div className="logo-heading">
+          <img src={UrbanEye} className="logo" alt="Logo" />
+          <h2 className="section-heading">Sign Up</h2>
         </div>
+
+        <form className="signup-form" onSubmit={handleSubmit}>
+          <input
+            type="text"
+            name="name"
+            required
+            placeholder="Name"
+            value={formData.name}
+            onChange={handleChange}
+          />
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+          />
+          <input
+            type="password"
+            name="password"
+            required
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+          />
+          <input
+            type="tel"
+            name="phone"
+            required
+            placeholder="Phone Number"
+            value={formData.phone}
+            onChange={handleChange}
+          />
+          <input
+            type="text"
+            name="address"
+            required
+            placeholder="Address"
+            value={formData.address}
+            onChange={handleChange}
+          />
+
+          <button type="submit" className={loading ? "loading" : ""} disabled={loading}>
+            {loading ? "Signing Up..." : "Sign Up"}
+          </button>
+          {error && <p className="error">{error}</p>}
+        
+            {/* Sign Up with Google */}
+            <GoogleOAuthProvider clientId={clientId}>
+                <GoogleLogin
+                    cookiePolicy={"single_host_origin"}
+                    onSuccess={HandleAuth}
+                    onError={() => {
+                    setError("Sign in with Google Failed, Please try again later");
+                    }}
+                    isSignedIn={true}
+                />
+            </GoogleOAuthProvider>
+
+        </form>
+
+        <p className="signup-text">
+          Already have an account? <a href="login.html">Login here</a>
+        </p>
+      </div>
+    </section>
     )
 }
 

@@ -14,7 +14,8 @@ const JWT_SECRET = "hifi"; // Use env variables
 const client = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 export const signup = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, phone, address, name} = req.body;
+  console.log(email, password, phone, address, name);
   
   try {
     const existingUser = await sql`SELECT * FROM School_Login WHERE Email = ${email}`;
@@ -26,8 +27,8 @@ export const signup = async (req, res) => {
       if (err) return res.status(500).json({ message: "Internal server error" });
 
       const newUser = await sql`
-        INSERT INTO School_Login (Email, Password) 
-        VALUES (${email}, ${hash}) RETURNING id;
+        INSERT INTO School_Login (Email, Password,name,phonenumber,address) 
+        VALUES (${email}, ${hash},${name},${phone},${address}) RETURNING id;
       `;
       const userId = newUser?.[0]?.id;
 
@@ -120,7 +121,7 @@ export const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    await sql`UPDATE School_Login SET isActive = TRUE WHERE id = ${decodedUserId}`;
+    await sql`UPDATE School_Login SET is_active = TRUE WHERE id = ${decodedUserId}`;
 
     // OTP verified, remove it from the database
     await sql`DELETE FROM Confirmation_Token WHERE id = ${decodedUserId};`;

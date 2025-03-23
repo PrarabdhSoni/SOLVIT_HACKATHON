@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './School_SignUp.css'
+import './login.css'
+import UrbanEye from '../../assets/Images/LOGO.png';
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 
 const clientId = "677130562489-hrvdg2tp2hlt7v0e7l2el986jdpng4cu.apps.googleusercontent.com"
@@ -9,6 +10,7 @@ const clientId = "677130562489-hrvdg2tp2hlt7v0e7l2el986jdpng4cu.apps.googleuserc
 const LogIn = () =>{
     const navigate = useNavigate();
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -24,6 +26,7 @@ const LogIn = () =>{
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         setError(null);
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login', formData);
@@ -35,6 +38,7 @@ const LogIn = () =>{
         console.error('Error Sign Up in', error);
         setError('Error signing up. Please try again later.');
         }
+        setLoading(false);
     }
 
         // defining the google auth function on sucess
@@ -49,70 +53,65 @@ const LogIn = () =>{
         }
 
     return(
-        <div>
-            <div className="signup-container">
-                <div className='signup-form-container'>
-                <img src='/src/assets/Images/LOGO.png'/>
-                    <h1 style={{fontFamily: "Roboto, sans-serif"}}>Log In</h1>
-                    <form style={{marginTop: '50px'}}>
-                        <div>
-                            <input
-                            type="text"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleChange}
-                            placeholder="Enter Email"
-                            required
-                            className="admission-form-input"
-                            />
-                        </div>
-                        <div>
-                            <input
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            placeholder="Password"
-                            required
-                            className="admission-form-input"
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            className="signup-form-button"
-                            onClick={handleSubmit}
-                            disabled={!formData.email || !formData.password}
-                        >
-                            Log In
-                        </button>
-                        {error && <p style={{ color: 'red' }}>{error}</p>}
-
-                        {/* OR tag for different signup option */}
-                        <p>OR</p>
-
-                        {/* Sign In with Google */}
-                        <GoogleOAuthProvider clientId={clientId}>
-                            <GoogleLogin
-                                cookiePolicy={"single_host_origin"}
-                                onSuccess={HandleAuth}
-                                onError={() => {
-                                setError("Sign in with Google Failed, Please try again later");
-                                }}
-                                isSignedIn={true}
-                            />
-                        </GoogleOAuthProvider>
-                        <p style={{opacity: 0.8}}>I do not have an account yet ? <span>  Login</span> </p>
-                    </form>
-                </div>
-                <div className='signup-plain-container'>
-                    <div style={{textAlign: 'right', marginTop: '20px'}}>
-                    <span >I do not have an account yet<button className="signup-form-button">Sign Up</button></span>
-                    </div>
-                    <h1 style={{marginTop: '40px', fontFamily: "Roboto, sans-serif"}}>EDU RISE Managemnt Software</h1>
-                    <img src='/src/assets/Images/MANAGING-NOW.jpg' style={{height: '400px'}}/>
-                </div>
-            </div>
+        <section id="login">
+      <div className="login-container">
+        <div className="logo-heading">
+          <img src={UrbanEye} className="logo" alt="Logo" />
+          <h2 className="section-heading">Login</h2>
         </div>
+
+        <form id="loginForm" onSubmit={handleSubmit}>
+          <div className="input-group">
+            <label htmlFor="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="input-group">
+            <label htmlFor="password">Password:</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+            />
+          </div>
+
+          {error && <p className="error-message">{error}</p>}
+
+          <button type="submit" className={`submit-btn ${loading ? "loading" : ""}`} disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+
+        {/* Sign In with Google */}
+        <GoogleOAuthProvider clientId={clientId}>
+            <GoogleLogin
+                cookiePolicy={"single_host_origin"}
+                onSuccess={HandleAuth}
+                onError={() => {
+                setError("Sign in with Google Failed, Please try again later");
+                }}
+                isSignedIn={true}
+            />
+        </GoogleOAuthProvider>
+        </form>
+
+        <p className="signup-text">
+          Don't have an account? <a href="signup.html">Sign up here</a>
+        </p>
+      </div>
+    </section>
+
     )
 }
 
