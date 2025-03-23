@@ -4,7 +4,28 @@ import { FiLogOut } from "react-icons/fi";
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState("personalDetails");
+  const [issueType, setIssueType] = useState("");
+  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [file, setFile] = useState(null);
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log({
+      issueType,
+      description,
+      location,
+      file
+    });
+    alert("Issue submitted successfully!");
+    
+    // Reset form fields after submission
+    setIssueType("");
+    setDescription("");
+    setLocation("");
+    setFile(null);
+  };
+  
   return (
     <div className="cd-dashboard">
       {/* Sidebar */}
@@ -99,7 +120,7 @@ const Dashboard = () => {
         {activeSection === "civicIssues" && (
           <div className="cd-content">
             <h2>Civic Issues</h2>
-            <select className="cd-dropdown">
+            <select className="cd-dropdown" onChange={(e) => setIssueType(e.target.value)}>
               <option value="">Select Issue</option>
               <option value="Streetlight">Streetlight Issues</option>
               <option value="RoadCracks">Road Cracks</option>
@@ -110,10 +131,10 @@ const Dashboard = () => {
             <br />
             <br />
             <div className="cd-issue-form">
-              <textarea className="cd-textarea" placeholder="Issue Description" rows="4"></textarea>
-              <input className="cd-file-input" type="file" accept="image/*,video/*" />
-              <input className="cd-text-input" type="text" placeholder="Location" />
-              <button className="cd-button">Submit</button>
+              <textarea className="cd-textarea" placeholder="Issue Description" rows="4" onChange={(e) => setDescription(e.target.value)}></textarea>
+              <input className="cd-file-input" type="file" accept="image/*,video/*" onChange={(e) => setFile(e.target.files[0])}/>
+              <input className="cd-text-input" type="text" placeholder="Location" onChange={(e) => setLocation(e.target.value)}/>
+              <button className="cd-button" onClick={handleSubmit}>Submit</button>
             </div>
           </div>
         )}

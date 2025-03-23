@@ -55,10 +55,9 @@ const OTPInput = ({ length = 6, onSubmit }) => {
   
       const data = await response.json();
   
-      if (data.success) {
+      if (response.status == 200) {
         alert("OTP verified successfully!");
         navigate("/dashboard")
-        // Redirect user or proceed further
       } else {
         alert(data.message);
       }
