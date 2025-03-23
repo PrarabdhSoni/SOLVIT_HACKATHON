@@ -12,7 +12,7 @@ import Priority from "./routes/priorityRoutes.js";
 
 dotenv.config();
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
@@ -24,7 +24,17 @@ mongoose.connect(process.env.MONGO_URI, {
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors({ origin: "http://localhost:5173", methods: ["GET", "POST"], credentials: true }));
+const allowedOrigins = [
+  "http://localhost:5173",  // For local testing
+  "https://your-frontend.onrender.com"  // Replace with your Render frontend URL
+];
+
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true
+}));
+
 app.use("/uploads", express.static("uploads"));  // Serve uploaded files
 
 // Routes
