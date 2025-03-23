@@ -8,6 +8,7 @@ import authRoutes from "./routes/authRoutes.js";
 import civicRoutes from "./controllers/civicController.js";
 import userDetailRoutes from "./routes/userDetailsRoutes.js";
 import civicIssueRoutes from "./routes/civicIssueRoute.js";
+import Priority from "./routes/priorityRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -31,7 +32,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userDetailRoutes);
 app.use("/api/issues", civicIssueRoutes);
 app.use("/api/civic", civicRoutes);
-
+app.use("/api/priority", Priority);
 app.get("/", (req, res) => res.send("API is running 🚀"));
 
 // Start server

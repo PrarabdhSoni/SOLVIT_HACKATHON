@@ -64,14 +64,25 @@ const Dashboard = () => {
         const response = await fetch("http://localhost:5000/api/civic/submit-issue", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${token}`, // ✅ Don't set Content-Type manually, FormData handles it
+                "Authorization": `Bearer ${token}`,
             },
-            body: formData, // ✅ Send FormData instead of JSON
+            body: formData,
         });
 
         const data = await response.json();
         console.log(data);
         alert(data.message);
+
+
+        const priority = await fetch("http://localhost:5000/api/priority/priority-list", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+      });
+
+      const data2 = await priority.json();
+      console.log(data2);
     } catch (error) {
         console.error("Error submitting issue:", error);
     }

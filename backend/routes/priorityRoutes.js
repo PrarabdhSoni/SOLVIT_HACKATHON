@@ -1,7 +1,7 @@
-const express = require("express");
-const { fetchPriorityList } = require("../controllers/priorityController");
+import express from "express";
+import {fetchPriorityList} from "../controllers/priorityController.js";
 const router = express.Router();
 
 router.get("/priority-list", fetchPriorityList);
 
-module.exports = router;
+export default router;

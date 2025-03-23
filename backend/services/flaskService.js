@@ -1,6 +1,6 @@
-const axios = require("axios");
+import axios from "axios";
 
-const getPriorityList = async () => {
+export const getPriorityList = async () => {
     try {
         const response = await axios.get("http://127.0.0.1:5000/priority-list");
         return response.data;
@@ -9,5 +9,3 @@ const getPriorityList = async () => {
         return { error: "Could not fetch data" };
     }
 };
-
-module.exports = { getPriorityList };

@@ -18,7 +18,8 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// ✅ Corrected Route Handler
+
+
 router.post("/submit-issue", upload.single("file"), async (req, res) => {
     try {
         console.log("Request Body:", req.body);
@@ -39,8 +40,8 @@ router.post("/submit-issue", upload.single("file"), async (req, res) => {
         const result = await sql`
             INSERT INTO civic_issues (userId, issueType, description, location, filePath) 
             VALUES (${userId}, ${issueType}, ${description}, ${location}, ${filePath})
-            RETURNING issueid;
-        `;
+            RETURNING issueid`;
+        console.log("Result:", result);
 
         res.status(201).json({ message: "Issue submitted successfully!", issueId: result[0].issueid });
     } catch (error) {
