@@ -24,6 +24,10 @@ const LogIn = () =>{
         }));
       };
 
+      const handleSignUp = () => {
+        navigate('/signup');
+      }
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -108,7 +112,7 @@ const LogIn = () =>{
         </form>
 
         <p className="signup-text">
-          Don't have an account? <a href="signup.html">Sign up here</a>
+          Don't have an account? <a onClick={handleSignUp} style={{cursor: 'pointer'}}>Sign up here</a>
         </p>
       </div>
     </section>

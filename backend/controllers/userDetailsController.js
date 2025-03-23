@@ -27,37 +27,4 @@ export const details = async (req, res) => {
         )
     });
 
-
-//     const record =  await sql`SELECT name, email, phoneNumber, address FROM users WHERE id = ?`, [userId], (err, result) => {
-//     if (err) return res.status(500).json({ message: "Database query failed" });
-
-//     if (result.length === 0) return res.status(404).json({ message: "User not found" });
-
-//     res.json(result[0]); // Return user details
-
-
-//   console.log(userId, otp);
-
-//   if (!userId || !otp) {
-//     return res.status(400).json({ success: false, message: "Invalid request" });
-//   }
-
-//   const decoded = jwt.verify(userId, "hifi"); // Use your secret key
-//   const decodedUserId = decoded.userId;  // Extract userId
-
-//   const otpRecord = await sql`
-//       SELECT otp FROM Confirmation_Token 
-//       WHERE id = ${decodedUserId} AND otp = ${otp};
-//     `;
-
-//     if (otpRecord.length === 0) {
-//       return res.status(400).json({ message: "Invalid or expired OTP" });
-//     }
-
-//     await sql`UPDATE School_Login SET is_active = TRUE WHERE id = ${decodedUserId}`;
-
-//     // OTP verified, remove it from the database
-//     await sql`DELETE FROM Confirmation_Token WHERE id = ${decodedUserId};`;
-
-//     res.status(200).json({ message: "OTP verified successfully" });
 };

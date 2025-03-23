@@ -12,22 +12,70 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log({
-      issueType,
-      description,
-      location,
-      file
-    });
-    alert("Issue submitted successfully!");
+  // const handleCivicSubmit = async (e) => {
+  //   e.preventDefault();
+  //   try {
+  //       const token = localStorage.getItem("userId");
+  //       console.log(token);
+  //       const formData = new FormData();
+  //       formData.append("issueType", issueType);
+  //       formData.append("description", description);
+  //       formData.append("location", location);
+  //       formData.append("file", file);
+
+  //       const response = await fetch("http://localhost:5000/api/civic/submit-issue", {
+  //           method: "POST",
+  //           headers: {
+  //               "Authorization": `Bearer ${token}`,
+  //           "Content-Type": "application/json",
+  //           },
+  //           body: formData,
+  //       });
+  //       if (!response.ok) {
+  //           throw new Error("Failed to submit issue."); 
+  //       }
+        
+  //       alert("Issue submitted successfully!");
+  //   } catch (error) {
+  //     console.error("Error submitting issue:", error);
+  //     alert("Failed to submit issue. Please try again.");
+  //   }
     
-    // Reset form fields after submission
-    setIssueType("");
-    setDescription("");
-    setLocation("");
-    setFile(null);
-  };
+  //   // Reset form fields after submission
+  //   setIssueType("");
+  //   setDescription("");
+  //   setLocation("");
+  //   setFile(null);
+  // };
+
+  const handleCivicSubmit = async (e) => {
+    e.preventDefault();
+    try {
+        const token = localStorage.getItem("userId");
+
+        const formData = new FormData();
+        formData.append("issueType", issueType);
+        formData.append("description", description);
+        formData.append("location", location);
+        if (file) {
+            formData.append("file", file);
+        }
+        console.log(formData);
+        const response = await fetch("http://localhost:5000/api/civic/submit-issue", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`, // ✅ Don't set Content-Type manually, FormData handles it
+            },
+            body: formData, // ✅ Send FormData instead of JSON
+        });
+
+        const data = await response.json();
+        console.log(data);
+        alert(data.message);
+    } catch (error) {
+        console.error("Error submitting issue:", error);
+    }
+};
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -67,7 +115,7 @@ const Dashboard = () => {
       <div className="cd-sidebar">
         {/* Welcome Banner */}
         <div className="cd-welcome-banner">
-          <h2>Welcome back, User!</h2>
+          <h2 >Welcome back,  {userDetails?.name}!</h2>
         </div>
 
         {/* Navigation Bar */}
@@ -161,21 +209,23 @@ const Dashboard = () => {
         {activeSection === "civicIssues" && (
           <div className="cd-content">
             <h2>Civic Issues</h2>
-            <select className="cd-dropdown" onChange={(e) => setIssueType(e.target.value)}>
+            <select className="cd-dropdown" value={issueType} onChange={(e) => setIssueType(e.target.value)}>
               <option value="">Select Issue</option>
-              <option value="Streetlight">Streetlight Issues</option>
-              <option value="RoadCracks">Road Cracks</option>
-              <option value="Garbage">Garbage Pickup</option>
-              <option value="Noise">Noise Complaints</option>
-              <option value="Other">Other</option>
+              <option value="Electricity Issue">Electricity Issue</option>
+              <option value="Fire Hazard">Fire Hazard</option>
+              <option value="Garbage Collection">Garbage Collection</option>
+              <option value="Road Damage">Road Damage</option>
+              <option value="Sanitation">Sanitation</option>
+              <option value="Traffic Congestion">Traffic Congestion</option>
+              <option value="Water Supply">Water Supply</option>
             </select>
             <br />
             <br />
             <div className="cd-issue-form">
-              <textarea className="cd-textarea" placeholder="Issue Description" rows="4" onChange={(e) => setDescription(e.target.value)}></textarea>
+              <textarea className="cd-textarea" placeholder="Issue Description" rows="4" value={description} onChange={(e) => setDescription(e.target.value)}></textarea>
               <input className="cd-file-input" type="file" accept="image/*,video/*" onChange={(e) => setFile(e.target.files[0])}/>
-              <input className="cd-text-input" type="text" placeholder="Location" onChange={(e) => setLocation(e.target.value)}/>
-              <button className="cd-button" onClick={handleSubmit}>Submit</button>
+              <input className="cd-text-input" type="text" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)}/>
+              <button className="cd-button" onClick={handleCivicSubmit}>Submit</button>
             </div>
           </div>
         )}

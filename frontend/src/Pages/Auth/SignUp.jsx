@@ -64,6 +64,10 @@ const SignUp = () =>{
         }
     }
 
+    const handleLogIn = () => {
+        navigate('/login');
+      }
+
     return(
         <section id="login">
       <div className="login-container">
@@ -134,7 +138,7 @@ const SignUp = () =>{
         </form>
 
         <p className="signup-text">
-          Already have an account? <a href="login.html">Login here</a>
+          Already have an account? <a onClick={handleLogIn} style={{cursor: 'pointer'}}>Login here</a>
         </p>
       </div>
     </section>

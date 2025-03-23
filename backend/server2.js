@@ -5,12 +5,9 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 
 import authRoutes from "./routes/authRoutes.js";
+import civicRoutes from "./controllers/civicController.js";
 import userDetailRoutes from "./routes/userDetailsRoutes.js";
-import severityRoutes from "./routes/severityRoutes.js";
-import resolutionRoutes from "./routes/resolutionRoutes.js";
-import classificationRoutes from "./routes/classificationRoutes.js";
-import anomalyRoutes from "./routes/anomalyRoutes.js";
-import civicIssueRoutes from "./routes/civicIssueRoute.js";  // Added Civic Issues API
+import civicIssueRoutes from "./routes/civicIssueRoute.js";
 
 dotenv.config();
 const app = express();
@@ -32,11 +29,8 @@ app.use("/uploads", express.static("uploads"));  // Serve uploaded files
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userDetailRoutes);
-app.use("/api/severity", severityRoutes);
-app.use("/api/resolution", resolutionRoutes);
-app.use("/api/classification", classificationRoutes);
-app.use("/api/anomaly", anomalyRoutes);
-app.use("/api/issues", civicIssueRoutes);   // Added the Civic Issues route
+app.use("/api/issues", civicIssueRoutes);
+app.use("/api/civic", civicRoutes);
 
 app.get("/", (req, res) => res.send("API is running 🚀"));
 
