@@ -61,9 +61,11 @@ export const login = async (req, res) => {
     const storedHashedPassword = result[0].password;
     const isMatch = await bcrypt.compare(password, storedHashedPassword);
     if (!isMatch) return res.status(401).send("Invalid credentials");
-
-    const userId = result[0].Id;
-    const token = jwt.sign({ userId }, "hifi", { expiresIn: "1h" });
+    console.log("auth login result",result)
+    const userId = result[0].id;
+    console.log("auth login userId",userId)
+    const token = jwt.sign({ userId: userId }, "hifi", { expiresIn: "1h" });
+    console.log("auth login token",token)
 
     res.status(200).json({ userId, message: "Login successful", token });
   } catch (err) {

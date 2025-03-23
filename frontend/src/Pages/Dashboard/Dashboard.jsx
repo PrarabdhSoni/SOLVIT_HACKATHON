@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./Dashboard.css";
 import { FiLogOut } from "react-icons/fi";
 
@@ -8,6 +8,9 @@ const Dashboard = () => {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [file, setFile] = useState(null);
+  const [userDetails, setUserDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,7 +28,39 @@ const Dashboard = () => {
     setLocation("");
     setFile(null);
   };
-  
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const token = localStorage.getItem("userId"); // Get JWT token
+        console.log(token);
+
+        const response = await fetch("http://localhost:5000/api/user/user-details", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await response.json();
+        console.log(data);
+
+        if (response.ok) {
+          setUserDetails(data);
+        } else {
+          setError(data.message || "Failed to fetch user details.");
+        }
+      } catch {
+        setError("Network error. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserDetails();
+  }, []);
+
   return (
     <div className="cd-dashboard">
       {/* Sidebar */}
@@ -91,29 +126,35 @@ const Dashboard = () => {
         {/* Personal Details Section */}
         {activeSection === "personalDetails" && (
           <div className="cd-content">
-            <h2>Personal Details</h2>
+          <h2>Personal Details</h2>
+          {loading ? (
+            <p>Loading...</p>
+          ) : error ? (
+            <p className="error-message">{error}</p>
+          ) : (
             <table className="cd-table">
               <tbody>
                 <tr>
                   <th>Name:</th>
-                  <td>[User’s Name]</td>
+                  <td>{userDetails?.name}</td>
                 </tr>
                 <tr>
                   <th>Email:</th>
-                  <td>[User’s Email]</td>
+                  <td>{userDetails?.email}</td>
                 </tr>
                 <tr>
                   <th>Phone:</th>
-                  <td>[User’s Phone]</td>
+                  <td>{userDetails?.phonenumber}</td>
                 </tr>
                 <tr>
                   <th>Address:</th>
-                  <td>[User’s Address]</td>
+                  <td>{userDetails?.address}</td>
                 </tr>
               </tbody>
             </table>
-            <button className="cd-button">Edit Details</button>
-          </div>
+          )}
+          <button className="cd-button">Edit Details</button>
+        </div>
         )}
 
         {/* Civic Issues Section */}

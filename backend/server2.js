@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 
 import authRoutes from "./routes/authRoutes.js";
+import userDetailRoutes from "./routes/userDetailsRoutes.js";
 import severityRoutes from "./routes/severityRoutes.js";
 import resolutionRoutes from "./routes/resolutionRoutes.js";
 import classificationRoutes from "./routes/classificationRoutes.js";
@@ -30,6 +31,7 @@ app.use("/uploads", express.static("uploads"));  // Serve uploaded files
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/user", userDetailRoutes);
 app.use("/api/severity", severityRoutes);
 app.use("/api/resolution", resolutionRoutes);
 app.use("/api/classification", classificationRoutes);

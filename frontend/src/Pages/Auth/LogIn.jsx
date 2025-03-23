@@ -30,8 +30,9 @@ const LogIn = () =>{
         setError(null);
         try {
             const response = await axios.post('http://localhost:5000/api/auth/login', formData);
-            if (response.status == 200 || response.id) {
-                localStorage.setItem('userId', response.data.id);
+            console.log(response);
+            if (response.status == 200) {
+                localStorage.setItem("userId", response.data.token);
                 navigate('/dashboard');
             }
         } catch (error) {
@@ -45,7 +46,7 @@ const LogIn = () =>{
         const HandleAuth = async (response) => {
             try {
                 const res = await axios.post("http://localhost:5000/api/auth/google", { token: response.credential });
-                localStorage.setItem("token", res.data.token); // Store JWT token
+                localStorage.setItem("userId", res.data.token); // Store JWT token
                 navigate("/dashboard")
             } catch (error) {
                 console.error("Auth failed", error);
