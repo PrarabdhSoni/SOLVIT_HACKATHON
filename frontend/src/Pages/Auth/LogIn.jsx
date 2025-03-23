@@ -33,7 +33,7 @@ const LogIn = () =>{
         setLoading(true);
         setError(null);
         try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', formData);
+            const response = await axios.post('https://solvit-hackathon.onrender.com/api/auth/login', formData);
             console.log(response);
             if (response.status == 200) {
                 localStorage.setItem("userId", response.data.token);
@@ -49,7 +49,7 @@ const LogIn = () =>{
         // defining the google auth function on sucess
         const HandleAuth = async (response) => {
             try {
-                const res = await axios.post("http://localhost:5000/api/auth/google", { token: response.credential });
+                const res = await axios.post("https://solvit-hackathon.onrender.com/api/auth/google", { token: response.credential });
                 localStorage.setItem("userId", res.data.token); // Store JWT token
                 navigate("/dashboard")
             } catch (error) {

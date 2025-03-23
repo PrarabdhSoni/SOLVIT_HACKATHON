@@ -61,7 +61,7 @@ const Dashboard = () => {
             formData.append("file", file);
         }
         console.log(formData);
-        const response = await fetch("http://localhost:5000/api/civic/submit-issue", {
+        const response = await fetch("https://solvit-hackathon.onrender.com/api/civic/submit-issue", {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`,
@@ -74,7 +74,7 @@ const Dashboard = () => {
         alert(data.message);
 
 
-        const priority = await fetch("http://localhost:5000/api/priority/priority-list", {
+        const priority = await fetch("https://solvit-hackathon.onrender.com/api/priority/priority-list", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -94,7 +94,7 @@ const Dashboard = () => {
         const token = localStorage.getItem("userId"); // Get JWT token
         console.log(token);
 
-        const response = await fetch("http://localhost:5000/api/user/user-details", {
+        const response = await fetch("https://solvit-hackathon.onrender.com/api/user/user-details", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,

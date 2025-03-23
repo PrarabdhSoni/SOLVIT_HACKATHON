@@ -4,3 +4,4 @@ pandas
 pymongo
 scikit-learn 
 joblib
+os
