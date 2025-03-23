@@ -15,7 +15,7 @@ const Hero = () => {
         { name: "Umanshi Goyal", role: "Developer & UI/UX Designer", image: Umanshi, linkedin: "https://www.linkedin.com/in/umanshi-goyal-407ba8289/", github: "https://github.com/goelumanshi" },
         { name: "Vraj Shah", role: "Developer & UI/UX Designer", image: Vraj, linkedin: "https://www.linkedin.com/in/vraj-shah-5b4127297", github: "https://github.com/Vraj26shah" },
         { name: "Pragalbh Sharma", role: "Machine Learning", image: Pragalbh, linkedin: "https://www.linkedin.com/in/pragalbh-sharma-b3146b311/", github: "https://github.com/pragalbhsharma" },
-        { name: "Shaurya Pathak", role: "Machine Learning", image: Shaurya, linkedin: "https://www.linkedin.com/in/shorya-pathak-a8950228a/", github: "https://github.com/Shorya783" },
+        { name: "Shorya Pathak", role: "Machine Learning", image: Shaurya, linkedin: "https://www.linkedin.com/in/shorya-pathak-a8950228a/", github: "https://github.com/Shorya783" },
         { name: "Muskan Srivastav", role: "Backend Developer", image: Muskan, linkedin: "https://www.linkedin.com/in/algonomad571", github: "https://github.com/algonomad571" },
       ];
 
